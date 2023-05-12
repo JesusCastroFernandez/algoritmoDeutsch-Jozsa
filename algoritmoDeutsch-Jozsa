@@ -1,0 +1,49 @@
+-- Definir la función que crea una superposición uniforme de todos los estados posibles
+function createSuperposition(qubits: Qubit[]): Unit {
+    Hadamard(qubits)
+}
+
+-- Definir la función que aplica la reflexión sobre la media
+function applyDiffusion(qubits: Qubit[]): Unit {
+    -- Calcular el promedio de la amplitud
+    let avg = 1.0 / length(qubits) * Sum(qubits)
+    -- Aplicar la reflexión sobre la media
+    for qubit in qubits {
+        X(qubit)
+    }
+    ControlledPhaseFlip(qubits, -2 * avg + 1)
+    for qubit in qubits {
+        X(qubit)
+    }
+}
+
+-- Definir la función que implementa la función a evaluar
+function evalFunction(x: Qubit[], y: Qubit[]): Unit {
+    -- La función puede ser constante o balanceada
+    -- Aquí definimos una función constante para el ejemplo
+    ControlledOnInt(x, 0, X, y)
+}
+
+-- Definir el algoritmo de Deutsch-Jozsa para determinar si una función es constante o balanceada
+function deutschJozsa(n: Int): Boolean {
+    let x = Qubit[n]
+    let y = Qubit[1]
+    createSuperposition(x)
+    X(y)
+    createSuperposition(y)
+    applyDiffusion(x)
+    evalFunction(x, y)
+    applyDiffusion(x)
+    let result = Measure(y)
+    ResetAll(x)
+    ResetAll(y)
+    return result
+}
+
+-- Ejecutar el algoritmo de Deutsch-Jozsa para determinar si una función es constante o balanceada
+let isConstant = deutschJozsa(2)
+if (isConstant) {
+    print("La función es constante")
+} else {
+    print("La función es balanceada")
+}
